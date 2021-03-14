@@ -9,18 +9,17 @@
 
 AShieldHeroPlayerController::AShieldHeroPlayerController()
 {
-	bShowMouseCursor = true;
 	DefaultMouseCursor = EMouseCursor::Crosshairs;
+	
 }
 
 void AShieldHeroPlayerController::PlayerTick(float DeltaTime)
 {
 	Super::PlayerTick(DeltaTime);
 
-	// keep updating the destination every tick while desired
-	if (bMoveToMouseCursor)
+	if (auto character = GetPawn<AShieldHeroCharacter>())
 	{
-		MoveToMouseCursor();
+		character->Move(_horizontal, _vertical);
 	}
 }
 
@@ -29,84 +28,16 @@ void AShieldHeroPlayerController::SetupInputComponent()
 	// set up gameplay key bindings
 	Super::SetupInputComponent();
 
-	InputComponent->BindAction("SetDestination", IE_Pressed, this, &AShieldHeroPlayerController::OnSetDestinationPressed);
-	InputComponent->BindAction("SetDestination", IE_Released, this, &AShieldHeroPlayerController::OnSetDestinationReleased);
-
-	// support touch devices 
-	InputComponent->BindTouch(EInputEvent::IE_Pressed, this, &AShieldHeroPlayerController::MoveToTouchLocation);
-	InputComponent->BindTouch(EInputEvent::IE_Repeat, this, &AShieldHeroPlayerController::MoveToTouchLocation);
-
-	InputComponent->BindAction("ResetVR", IE_Pressed, this, &AShieldHeroPlayerController::OnResetVR);
+	InputComponent->BindAxis("Vertical", this, &AShieldHeroPlayerController::OnVertical);
+	InputComponent->BindAxis("Horizontal", this, &AShieldHeroPlayerController::OnHorizontal);
 }
 
-void AShieldHeroPlayerController::OnResetVR()
+void AShieldHeroPlayerController::OnVertical(float vertical)
 {
-	UHeadMountedDisplayFunctionLibrary::ResetOrientationAndPosition();
+	_vertical = vertical;
 }
 
-void AShieldHeroPlayerController::MoveToMouseCursor()
+void AShieldHeroPlayerController::OnHorizontal(float horizontal)
 {
-	if (UHeadMountedDisplayFunctionLibrary::IsHeadMountedDisplayEnabled())
-	{
-		if (AShieldHeroCharacter* MyPawn = Cast<AShieldHeroCharacter>(GetPawn()))
-		{
-			if (MyPawn->GetCursorToWorld())
-			{
-				UAIBlueprintHelperLibrary::SimpleMoveToLocation(this, MyPawn->GetCursorToWorld()->GetComponentLocation());
-			}
-		}
-	}
-	else
-	{
-		// Trace to see what is under the mouse cursor
-		FHitResult Hit;
-		GetHitResultUnderCursor(ECC_Visibility, false, Hit);
-
-		if (Hit.bBlockingHit)
-		{
-			// We hit something, move there
-			SetNewMoveDestination(Hit.ImpactPoint);
-		}
-	}
-}
-
-void AShieldHeroPlayerController::MoveToTouchLocation(const ETouchIndex::Type FingerIndex, const FVector Location)
-{
-	FVector2D ScreenSpaceLocation(Location);
-
-	// Trace to see what is under the touch location
-	FHitResult HitResult;
-	GetHitResultAtScreenPosition(ScreenSpaceLocation, CurrentClickTraceChannel, true, HitResult);
-	if (HitResult.bBlockingHit)
-	{
-		// We hit something, move there
-		SetNewMoveDestination(HitResult.ImpactPoint);
-	}
-}
-
-void AShieldHeroPlayerController::SetNewMoveDestination(const FVector DestLocation)
-{
-	APawn* const MyPawn = GetPawn();
-	if (MyPawn)
-	{
-		float const Distance = FVector::Dist(DestLocation, MyPawn->GetActorLocation());
-
-		// We need to issue move command only if far enough in order for walk animation to play correctly
-		if ((Distance > 120.0f))
-		{
-			UAIBlueprintHelperLibrary::SimpleMoveToLocation(this, DestLocation);
-		}
-	}
-}
-
-void AShieldHeroPlayerController::OnSetDestinationPressed()
-{
-	// set flag to keep updating destination until released
-	bMoveToMouseCursor = true;
-}
-
-void AShieldHeroPlayerController::OnSetDestinationReleased()
-{
-	// clear flag to indicate we should stop updating the destination
-	bMoveToMouseCursor = false;
+	_horizontal = horizontal;
 }
