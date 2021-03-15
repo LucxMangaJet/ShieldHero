@@ -9,6 +9,8 @@
 #include "GameFramework/PlayerController.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "HeadMountedDisplayFunctionLibrary.h"
+#include "HealthComponent.h"
+#include "Components/ChildActorComponent.h"
 #include "Materials/Material.h"
 #include "Engine/World.h"
 
@@ -43,9 +45,12 @@ AShieldHeroCharacter::AShieldHeroCharacter()
 
 
 	//Create the shield...
-	_shield = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Shield"));
+	_shield = CreateDefaultSubobject<UChildActorComponent>(TEXT("Shield"));
 	_shield->SetupAttachment(RootComponent);
+	_shield->bEditableWhenInherited = true;
 	
+	//Create the health component...
+	_healthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("Health"));
 
 	// Activate ticking in order to update the cursor every frame.
 	PrimaryActorTick.bCanEverTick = true;
@@ -55,7 +60,7 @@ AShieldHeroCharacter::AShieldHeroCharacter()
 void AShieldHeroCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	_shield->OnComponentHit.AddDynamic(this, &AShieldHeroCharacter::OnShieldBeginOverlap);
+
 }
 
 void AShieldHeroCharacter::Tick(float DeltaSeconds)
@@ -71,7 +76,3 @@ void AShieldHeroCharacter::Move(float horizontal, float vertical)
 }
 
 
-void AShieldHeroCharacter::OnShieldBeginOverlap(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
-{
-	UE_LOG(LogTemp, Log, TEXT("HIT"));
-}
