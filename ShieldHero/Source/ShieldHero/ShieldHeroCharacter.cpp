@@ -13,6 +13,7 @@
 #include "Components/ChildActorComponent.h"
 #include "Materials/Material.h"
 #include "Engine/World.h"
+#include "Kismet/KismetMathLibrary.h"
 
 AShieldHeroCharacter::AShieldHeroCharacter()
 {
@@ -48,7 +49,7 @@ AShieldHeroCharacter::AShieldHeroCharacter()
 	_shield = CreateDefaultSubobject<UChildActorComponent>(TEXT("Shield"));
 	_shield->SetupAttachment(RootComponent);
 	_shield->bEditableWhenInherited = true;
-	
+
 	//Create the health component...
 	_healthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("Health"));
 
@@ -65,14 +66,24 @@ void AShieldHeroCharacter::BeginPlay()
 
 void AShieldHeroCharacter::Tick(float DeltaSeconds)
 {
-    Super::Tick(DeltaSeconds);
+	Super::Tick(DeltaSeconds);
 
-	
+
 }
 
 void AShieldHeroCharacter::Move(float horizontal, float vertical)
 {
-	AddMovementInput(FVector(vertical, horizontal, 0), 1);
+	FVector direction = FVector(vertical, horizontal, 0);
+
+	if (direction.Size() > 0.0f)
+	{
+		FRotator rotation = UKismetMathLibrary::MakeRotFromXZ(direction, FVector::UpVector);
+
+		SetActorRotation(rotation);
+
+		if (direction.Size() > 0.3f)
+		{
+			AddMovementInput(direction, 1);
+		}
+	}
 }
-
-
