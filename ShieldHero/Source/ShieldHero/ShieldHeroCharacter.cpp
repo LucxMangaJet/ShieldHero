@@ -49,6 +49,7 @@ AShieldHeroCharacter::AShieldHeroCharacter()
 	_shield = CreateDefaultSubobject<UChildActorComponent>(TEXT("Shield"));
 	_shield->SetupAttachment(RootComponent);
 	_shield->bEditableWhenInherited = true;
+	_shield->SetUsingAbsoluteRotation(true);
 
 	//Create the health component...
 	_healthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("Health"));
@@ -61,7 +62,6 @@ AShieldHeroCharacter::AShieldHeroCharacter()
 void AShieldHeroCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-
 }
 
 void AShieldHeroCharacter::Tick(float DeltaSeconds)
@@ -86,4 +86,21 @@ void AShieldHeroCharacter::Move(float horizontal, float vertical)
 			AddMovementInput(direction, 1);
 		}
 	}
+}
+
+void AShieldHeroCharacter::AimShield(float horizontal, float vertical)
+{
+	FVector direction = FVector(vertical, horizontal, 0);
+	if (direction.Size() > 0.0f)
+	{
+		_shieldOrientation = direction;
+
+	}
+		FRotator rotation = UKismetMathLibrary::MakeRotFromXZ(_shieldOrientation, FVector::UpVector);
+
+		_shield->SetWorldRotation(rotation);
+
+		 FVector offset = rotation.RotateVector(_shieldOffset);
+
+		_shield->SetWorldLocation(GetActorLocation() + offset);
 }

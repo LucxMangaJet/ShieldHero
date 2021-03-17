@@ -17,6 +17,8 @@ public:
 protected:
 	float _vertical;
 	float _horizontal;
+	float _aimVertical;
+	float _aimHorizontal;
 
 
 	// Begin PlayerController interface
@@ -26,6 +28,10 @@ protected:
 
 	void OnVertical(float vertical);
 	void OnHorizontal(float horizontal);
+
+	void OnAimVertical(float vertical);
+	void OnAimHorizontal(float horizontal);
+
 };
 
 
