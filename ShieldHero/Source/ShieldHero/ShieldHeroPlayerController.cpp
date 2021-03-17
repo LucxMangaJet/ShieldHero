@@ -20,6 +20,7 @@ void AShieldHeroPlayerController::PlayerTick(float DeltaTime)
 	if (auto character = GetPawn<AShieldHeroCharacter>())
 	{
 		character->Move(_horizontal, _vertical);
+		character->AimShield(_aimHorizontal, _aimVertical);
 	}
 }
 
@@ -30,6 +31,9 @@ void AShieldHeroPlayerController::SetupInputComponent()
 
 	InputComponent->BindAxis("Vertical", this, &AShieldHeroPlayerController::OnVertical);
 	InputComponent->BindAxis("Horizontal", this, &AShieldHeroPlayerController::OnHorizontal);
+
+	InputComponent->BindAxis("Aim_Vertical", this, &AShieldHeroPlayerController::OnAimVertical);
+	InputComponent->BindAxis("Aim_Horizontal", this, &AShieldHeroPlayerController::OnAimHorizontal);
 }
 
 void AShieldHeroPlayerController::OnVertical(float vertical)
@@ -40,4 +44,14 @@ void AShieldHeroPlayerController::OnVertical(float vertical)
 void AShieldHeroPlayerController::OnHorizontal(float horizontal)
 {
 	_horizontal = horizontal;
+}
+
+void AShieldHeroPlayerController::OnAimVertical(float vertical)
+{
+	_aimVertical = vertical;
+}
+
+void AShieldHeroPlayerController::OnAimHorizontal(float horizontal)
+{
+	_aimHorizontal = horizontal;
 }
