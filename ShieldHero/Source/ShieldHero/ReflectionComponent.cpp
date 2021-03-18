@@ -11,17 +11,4 @@ UReflectionComponent::UReflectionComponent()
 }
 
 
-// Called when the game starts
-void UReflectionComponent::BeginPlay()
-{
-	Super::BeginPlay();
-
-}
-
-
-// Called every frame
-void UReflectionComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
-{
-	
-}
 

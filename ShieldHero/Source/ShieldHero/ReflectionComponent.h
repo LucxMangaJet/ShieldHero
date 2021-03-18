@@ -9,8 +9,10 @@
 UENUM(BlueprintType)
 enum class ReflectionType : uint8
 {
-	NoReflection,
-	SimpleReflection
+	Reflect,
+	StopAndDamage,
+	ReflectAndDamage,
+	ReflectDirected
 };
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -25,15 +27,4 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 		ReflectionType _reflectionType;
 
-protected:
-	// Called when the game starts
-	virtual void BeginPlay() override;
-
-
-
-public:	
-	// Called every frame
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-
-		
 };
