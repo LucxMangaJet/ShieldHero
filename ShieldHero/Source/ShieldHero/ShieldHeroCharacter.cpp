@@ -14,6 +14,7 @@
 #include "Materials/Material.h"
 #include "Engine/World.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "ProjectileActor.h"
 
 AShieldHeroCharacter::AShieldHeroCharacter()
 {
@@ -49,7 +50,6 @@ AShieldHeroCharacter::AShieldHeroCharacter()
 	_shield = CreateDefaultSubobject<UChildActorComponent>(TEXT("Shield"));
 	_shield->SetupAttachment(RootComponent);
 	_shield->bEditableWhenInherited = true;
-	_shield->SetUsingAbsoluteRotation(true);
 
 	//Create the health component...
 	_healthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("Health"));
@@ -62,6 +62,13 @@ AShieldHeroCharacter::AShieldHeroCharacter()
 void AShieldHeroCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	switch (_shieldMode)
+	{
+	case ShieldMode::ShieldIsOwnInput:
+		_shield->SetUsingAbsoluteRotation(true);
+		break;
+	}
 }
 
 void AShieldHeroCharacter::Tick(float DeltaSeconds)
@@ -74,6 +81,7 @@ void AShieldHeroCharacter::Tick(float DeltaSeconds)
 void AShieldHeroCharacter::Move(float horizontal, float vertical)
 {
 	FVector direction = FVector(vertical, horizontal, 0);
+	bool shouldMove = direction.Size() > 0.3f;
 
 	if (direction.Size() > 0.0f)
 	{
@@ -81,26 +89,100 @@ void AShieldHeroCharacter::Move(float horizontal, float vertical)
 
 		SetActorRotation(rotation);
 
-		if (direction.Size() > 0.3f)
+		if (shouldMove)
 		{
 			AddMovementInput(direction, 1);
+		}
+	}
+
+	if (_shieldMode == ShieldMode::DirectionalShieldOnIdle)
+	{
+		if (shouldMove)
+		{
+			_shield->SetHiddenInGame(true, true);
+		}
+		else
+		{
+			_shield->SetHiddenInGame(false, true);
+		}
+	}
+	else if (_shieldMode == ShieldMode::AutoaimShieldOnIdle)
+	{
+		if (shouldMove)
+		{
+			_shield->SetHiddenInGame(true, true);
+		}
+		else
+		{
+			_shield->SetHiddenInGame(false, true);
+
+			AActor* projectile = GetClosestProjectile();
+			if (projectile)
+			{
+				FVector shieldDir = projectile->GetActorLocation() - GetActorLocation();
+				shieldDir.Z = 0;
+				_shieldOrientation = shieldDir;
+				UpdateShieldOrientation();
+			}
 		}
 	}
 }
 
 void AShieldHeroCharacter::AimShield(float horizontal, float vertical)
 {
-	FVector direction = FVector(vertical, horizontal, 0);
-	if (direction.Size() > 0.0f)
+	if (_shieldMode == ShieldMode::ShieldIsOwnInput)
 	{
-		_shieldOrientation = direction;
-
+		FVector direction = FVector(vertical, horizontal, 0);
+		if (direction.Size() > 0.0f)
+		{
+			_shieldOrientation = direction;
+			UpdateShieldOrientation();
+		}
 	}
-		FRotator rotation = UKismetMathLibrary::MakeRotFromXZ(_shieldOrientation, FVector::UpVector);
+}
 
-		_shield->SetWorldRotation(rotation);
 
-		 FVector offset = rotation.RotateVector(_shieldOffset);
+AActor* AShieldHeroCharacter::GetClosestProjectile()
+{
+	FCollisionShape collisionShape = FCollisionShape::MakeSphere(500.0f);
+	TArray<FHitResult> OutResults;
+	bool res = GetWorld()->SweepMultiByChannel(OutResults, GetActorLocation(), GetActorLocation(), FQuat::Identity, ECollisionChannel::ECC_WorldDynamic, collisionShape);
 
-		_shield->SetWorldLocation(GetActorLocation() + offset);
+	if (res)
+	{
+		AActor* closestActor = nullptr;
+		float currentClosestDistance = TNumericLimits<float>::Max();
+
+		for (int i = 0; i < OutResults.Num(); i++)
+		{
+			AActor* actor = OutResults[i].GetActor();
+
+			if (!Cast<AProjectileActor>(actor))
+				continue;
+
+			float distance = FVector::DistSquared(GetActorLocation(), actor->GetActorLocation());
+			if (distance < currentClosestDistance)
+			{
+				currentClosestDistance = distance;
+				closestActor = actor;
+			}
+		}
+
+		if (closestActor)
+			UE_LOG(LogTemp, Log, TEXT("%s"), *closestActor->GetName());
+		return closestActor;
+	}
+
+	return nullptr;
+}
+
+void AShieldHeroCharacter::UpdateShieldOrientation()
+{
+	FRotator rotation = UKismetMathLibrary::MakeRotFromXZ(_shieldOrientation, FVector::UpVector);
+
+	_shield->SetWorldRotation(rotation);
+
+	FVector offset = rotation.RotateVector(_shieldOffset);
+
+	_shield->SetWorldLocation(GetActorLocation() + offset);
 }
