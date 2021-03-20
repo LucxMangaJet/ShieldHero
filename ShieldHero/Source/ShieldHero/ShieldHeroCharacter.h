@@ -7,6 +7,14 @@
 #include "ShieldHeroCharacter.generated.h"
 
 
+UENUM(BlueprintType)
+enum class ShieldMode : uint8
+{
+	ShieldIsOwnInput,
+	DirectionalShieldOnIdle,
+	AutoaimShieldOnIdle
+};
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FMovementDelegate);
 
 UCLASS(Blueprintable)
@@ -26,6 +34,11 @@ public:
 
 	UFUNCTION()
 	void AimShield(float horitontal, float vertical);
+
+	UFUNCTION()
+	AActor* GetClosestProjectile();
+
+	void UpdateShieldOrientation();
 
 	/** Returns TopDownCameraComponent subobject **/
 	FORCEINLINE class UCameraComponent* GetTopDownCameraComponent() const { return _topDownCameraComponent; }
@@ -58,5 +71,8 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay, meta = (AllowPrivateAccess = "true"))
 	FVector _shieldOffset;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay, meta = (AllowPrivateAccess = "true"))
+	ShieldMode _shieldMode = ShieldMode::ShieldIsOwnInput;
 };
 
