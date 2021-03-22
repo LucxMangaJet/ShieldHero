@@ -8,7 +8,7 @@
 #include "HealthComponent.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FHealthChangedDelegate, float, newHealth, float, change);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDeathDelegate);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDeathDelegate, AActor* , actor);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class SHIELDHERO_API UHealthComponent : public UActorComponent , public IDamagableInterface

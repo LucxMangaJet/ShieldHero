@@ -37,7 +37,7 @@ void UHealthComponent::TakeDamage_Implementation(float amount)
 	if (_health <= 0)
 	{
 		_isDead = true;
-		OnDeath.Broadcast();
+		OnDeath.Broadcast(GetOwner());
 	}
 }
 

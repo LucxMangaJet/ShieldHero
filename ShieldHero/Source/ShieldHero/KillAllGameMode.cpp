@@ -4,40 +4,11 @@
 #include "HealthComponent.h"
 #include "ShieldHeroPlayerController.h"
 
-
-AKillAllGameMode::AKillAllGameMode()
+void AKillAllGameMode::OnEnemyDeath(AActor* actor)
 {
-	// use our custom PlayerController class
-	PlayerControllerClass = AShieldHeroPlayerController::StaticClass();
+	Super::OnEnemyDeath(actor);
 
-}
-
-void AKillAllGameMode::RegisterEnemy(AActor* actor)
-{
-	if (!actor)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Register Enemy null pointer"));
-		return;
-	}
-
-	UHealthComponent* healthComponent = Cast<UHealthComponent>(actor->GetComponentByClass(UHealthComponent::StaticClass()));
-
-	if (!healthComponent)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Trying to register an enemy with no health component"));
-		return;
-	}
-
-	_enemyCount++;
-	healthComponent->OnDeath.AddDynamic(this, &AKillAllGameMode::OnEnemyDeath);
-	UE_LOG(LogTemp, Log, TEXT("Registered enemy"));
-}
-
-void AKillAllGameMode::OnEnemyDeath()
-{
-	UE_LOG(LogTemp, Log, TEXT("Registered enemy death"));
-	_enemyCount--;
-	if (_enemyCount == 0)
+	if (_enemyCount <= 0)
 	{
 		OnGameWon.Broadcast();
 	}
