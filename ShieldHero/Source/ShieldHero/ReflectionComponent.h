@@ -17,8 +17,17 @@ enum class ReflectionType : uint8
 	Custom
 };
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FCustomReflectionDelegate, AActor*, actor, UProjectileMovementComponent*, projectileMovement, FVector, hitNormal);
+UENUM(BlueprintType)
+enum class ShieldReflectionModifier : uint8
+{
+	None,
+	Double,
+	VShape,
+	TShape
+};
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FCustomReflectionDelegate, AActor*, actor, UProjectileMovementComponent*, projectileMovement, FVector, hitNormal);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FPostCustomReflectionDelegate, AActor*, actor, UProjectileMovementComponent*, projectileMovement);
 
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class SHIELDHERO_API UReflectionComponent : public USceneComponent
@@ -32,6 +41,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	ReflectionType _reflectionType;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
+	ShieldReflectionModifier _reflectionModifier;
+
 	UFUNCTION(BlueprintCallable)
 	void NotifyCustomReflection(AActor* actor, UProjectileMovementComponent* projectileMovement, FVector hitNormal);
 
@@ -41,4 +53,6 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Gameplay")
 	FCustomReflectionDelegate OnCustomReflection;
 
+	UPROPERTY(BlueprintAssignable, Category = "Gameplay")
+	FPostCustomReflectionDelegate OnPostCustomReflection;
 };

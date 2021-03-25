@@ -14,6 +14,7 @@ UReflectionComponent::UReflectionComponent()
 void UReflectionComponent::NotifyCustomReflection(AActor* actor, UProjectileMovementComponent* projectileMovement, FVector hitNormal)
 {
 	OnCustomReflection.Broadcast(actor, projectileMovement, hitNormal);
+	OnPostCustomReflection.Broadcast(actor, projectileMovement);
 }
 
 AActor* UReflectionComponent::FindBestEnemyInDirectionAfterReflection(FVector origin, FVector normal, FVector inVelocity, float maxDistance)
